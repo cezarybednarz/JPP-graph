@@ -24,12 +24,14 @@ singleton :: a -> Set a
 singleton = Singleton
 
 fromList :: [a] -> Set a
-fromList (x:xs) = union (singleton x) (fromList xs)
+fromList []     = empty
+fromList [x]    = singleton x 
+fromList (x:xs) =  union (singleton x) (fromList xs)
 
 toList :: Set a -> [a]
 toList Empty = []
 toList (Singleton x) = [x]
-toList (Union left right) = toList left ++ toList right
+toList (Union left right) = (toList left) ++ (toList right)
 
 toAscList :: Ord a => Set a -> [a]
 toAscList s = Data.List.sort (toList s)
@@ -49,13 +51,13 @@ instance Ord a => Eq (Set a) where
     (==) x y = toAscList x == toAscList y
 
 instance Semigroup (Set a) where
--- todo
+    (<>) x y = fromList ((toList x) ++ (toList y))
 
 instance Monoid (Set a) where
--- todo
+    mempty = empty
 
 instance Show a => Show (Set a) where
--- todo
+    show x = show (toList x)
 
 instance Functor Set where
--- todo
+    fmap f x = fromList (fmap f (toList x))
