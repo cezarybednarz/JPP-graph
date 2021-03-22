@@ -2,7 +2,7 @@ module Set(Set(..), empty, null, singleton, union, fromList
               , member, toList, toAscList, elems
               ) where
 import Prelude hiding(null, toList)
-import qualified Data.List(sort) 
+import qualified Data.List(nub, sort) 
 
 data Set a = Empty
            | Singleton a
@@ -34,7 +34,7 @@ toList (Singleton x) = [x]
 toList (Union left right) = (toList left) ++ (toList right)
 
 toAscList :: Ord a => Set a -> [a]
-toAscList s = Data.List.sort (toList s)
+toAscList s = Data.List.sort (Data.List.nub (toList s))
 
 elems :: Set a -> [a]
 elems = toList
