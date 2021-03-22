@@ -1,7 +1,8 @@
 module Set(Set(..), empty, null, singleton, union, fromList
               , member, toList, toAscList, elems
               ) where
-import Prelude hiding(null)
+import Prelude hiding(null, toList)
+import qualified Data.List(sort) 
 
 data Set a = Empty
            | Singleton a
@@ -23,15 +24,15 @@ singleton :: a -> Set a
 singleton = Singleton
 
 fromList :: [a] -> Set a
-fromList (x:xs) = singleton x union fromList xs
+fromList (x:xs) = union (singleton x) (fromList xs)
 
 toList :: Set a -> [a]
 toList Empty = []
-toList Singleton x = [x]
-toList Union left right = toList left ++ toList right
+toList (Singleton x) = [x]
+toList (Union left right) = toList left ++ toList right
 
 toAscList :: Ord a => Set a -> [a]
-toAscList s = sort (toList s)
+toAscList s = Data.List.sort (toList s)
 
 elems :: Set a -> [a]
 elems = toList
@@ -41,11 +42,11 @@ union = Union
 
 insert :: a -> Set a -> Set a
 insert x Empty = singleton x
-insert x (Singleton y) = singleton x union singleton y
-insert x (Union left right) = insert x left union right
+insert x (Singleton y) = union (singleton x) (singleton y)
+insert x (Union left right) = union (insert x left) right
 
 instance Ord a => Eq (Set a) where
--- todo
+    (==) x y = toAscList x == toAscList y
 
 instance Semigroup (Set a) where
 -- todo
