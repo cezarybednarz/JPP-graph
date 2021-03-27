@@ -10,10 +10,10 @@ class Graph g where
 data Relation a = Relation { domain :: Set a, relation :: Set (a, a) }
     deriving (Eq, Show)
 
--- data Basic a = Empty
---              | Vertex a
---              | Union (Basic a) (Basic a)
---              | Connect (Basic a) (Basic a)
+data Basic a = Empty
+             | Vertex a
+             | Union (Basic a) (Basic a)
+             | Connect (Basic a) (Basic a)
 
 instance Graph Relation where
   empty = Relation { domain = Set.empty, relation = Set.empty }
@@ -26,8 +26,13 @@ instance Graph Relation where
       relation = Set.union (Set.union fr sr) (Set.fromList ([(x, y) | x <- Set.toList fd, y <- Set.toList sd]))
     }
                 
--- instance (Ord a, Num a) => Num (Relation a) where
--- -- todo B
+instance (Ord a, Num a) => Num (Relation a) where
+  fromInteger = vertex . fromInteger
+  (+)         = union
+  (*)         = connect
+  signum      = const empty
+  abs         = id
+  negate      = id
 
 -- instance Graph Basic where
 -- -- todo B
