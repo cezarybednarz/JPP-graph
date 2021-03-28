@@ -34,25 +34,43 @@ instance (Ord a, Num a) => Num (Relation a) where
   abs         = id
   negate      = id
 
--- instance Graph Basic where
--- -- todo B
+instance Graph Basic where
+  empty = Empty
+  vertex = Vertex 
+  union = Union
+  connect = Connect
 
--- instance Ord a => Eq (Basic a) where
--- -- todo B
+toSetV :: Ord a => Basic a -> [a] 
+toSetV Empty = []
+toSetV Vertex v = [v]
+toSetV Union x y = Set.union (toSetV x) (toSetV y)
+toSetV Connect x y = Set.union (toSetV x) (toSetV y)
 
--- instance (Ord a, Num a) => Num (Basic a) where
---     fromInteger = vertex . fromInteger
---     (+)         = union
---     (*)         = connect
---     signum      = const empty
---     abs         = id
---     negate      = id
+toSetE :: Ord a => Basic a -> [(a, a)]
+toSetE Empty = []
+toSetE Vertex v = []
+toSetE Union x y = Set.union (toSetE x) (toSetE y)
+toSetE Connect x y = 
+  Set.union 
+    (Set.union (toAscListE x) (toAscListE y)) 
+    [(p, q) | p <- Set.toList (toSetV x), q <- Set.toList (toSetV y)]
 
--- instance Semigroup (Basic a) where
---   (<>) = union
+instance Ord a => Eq (Basic a) where
+  (==) x y = (toSetV x == toSetV y) && (toSetE x == toSetE y)
 
--- instance Monoid (Basic a) where
---   mempty = Empty
+instance (Ord a, Num a) => Num (Basic a) where
+  fromInteger = vertex . fromInteger
+  (+)         = union
+  (*)         = connect
+  signum      = const empty
+  abs         = id
+  negate      = id
+
+instance Semigroup (Basic a) where
+  (<>) = union
+
+instance Monoid (Basic a) where
+  mempty = Empty
 
 -- fromBasic :: Graph g => Basic a -> g a
 -- -- todo B
