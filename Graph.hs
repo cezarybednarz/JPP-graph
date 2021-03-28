@@ -104,12 +104,17 @@ instance Functor Basic where
   fmap f (Union x y) = union (fmap f x) (fmap f y)
   fmap f (Connect x y) = connect (fmap f x) (fmap f y)
 
--- -- | Merge vertices
--- -- >>> mergeV 3 4 34 example34
--- -- edges [(1,2),(2,34),(34,5)] + vertices [17]
+-- | Merge vertices
+-- >>> mergeV 3 4 34 example34
+-- edges [(1,2),(2,34),(34,5)] + vertices [17]
 
 mergeV :: Eq a => a -> a -> a -> Basic a -> Basic a
-  mergeV = undefined
+mergeV x y z = 
+  fmap (\v -> case () of 
+              _  | v == x -> z
+                 | v == y -> z
+                 | otherwise -> v)
+                         
 
 -- instance Applicative Basic where
 -- -- todo D
