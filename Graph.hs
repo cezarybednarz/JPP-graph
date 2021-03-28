@@ -2,11 +2,11 @@ module Graph where
 import Set(Set)
 import qualified Set as Set
 class Graph g where
-  empty   :: g a
-  vertex  :: a -> g a
-  union   :: g a -> g a -> g a
-  connect :: g a -> g a -> g a
-  fromBasic :: (Basic a) -> g a
+  empty     :: g a
+  vertex    :: a -> g a
+  union     :: g a -> g a -> g a
+  connect   :: g a -> g a -> g a
+  fromBasic :: Basic a -> g a
 
 data Relation a = Relation { domain :: Set a, relation :: Set (a, a) }
     deriving (Eq, Show)
@@ -28,8 +28,14 @@ instance Graph Relation where
     }
   fromBasic Empty = empty
   fromBasic (Vertex v) = vertex v
-  --fromBasic (Union x y) = union x y
-  --fromBasic (Connect x y) = union x y
+  fromBasic (Union x y) = 
+    let xRel = fromBasic x
+        yRel = fromBasic y
+    in union xRel yRel
+  fromBasic (Connect x y) = 
+    let xRel = fromBasic x
+        yRel = fromBasic y
+    in connect xRel yRel
                 
 instance (Ord a, Num a) => Num (Relation a) where
   fromInteger = vertex . fromInteger
@@ -78,17 +84,12 @@ instance Semigroup (Basic a) where
 instance Monoid (Basic a) where
   mempty = Empty
 
--- instance Graph Relation where 
---   fromBasic Empty = empty
---   fromBasic Vertex v = vertex v
---   fromBasic Union x y = union 
-
 -- instance (Ord a, Show a) => Show (Basic a) where
 -- -- todo B
 
--- -- | Example graph
--- -- >>> example34
--- -- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
+-- | Example graph
+-- >>> example34
+-- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
 
 -- example34 :: Basic Int
 -- example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
