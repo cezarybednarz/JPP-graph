@@ -6,6 +6,7 @@ class Graph g where
   vertex  :: a -> g a
   union   :: g a -> g a -> g a
   connect :: g a -> g a -> g a
+  fromBasic :: (Basic a) -> g a
 
 data Relation a = Relation { domain :: Set a, relation :: Set (a, a) }
     deriving (Eq, Show)
@@ -25,6 +26,10 @@ instance Graph Relation where
       domain = Set.union fd sd, 
       relation = Set.union (Set.union fr sr) (Set.fromList ([(x, y) | x <- Set.toList fd, y <- Set.toList sd]))
     }
+  fromBasic Empty = empty
+  fromBasic (Vertex v) = vertex v
+  --fromBasic (Union x y) = union x y
+  --fromBasic (Connect x y) = union x y
                 
 instance (Ord a, Num a) => Num (Relation a) where
   fromInteger = vertex . fromInteger
@@ -39,21 +44,22 @@ instance Graph Basic where
   vertex = Vertex 
   union = Union
   connect = Connect
+  fromBasic b = b
 
-toSetV :: Ord a => Basic a -> [a] 
-toSetV Empty = []
-toSetV Vertex v = [v]
-toSetV Union x y = Set.union (toSetV x) (toSetV y)
-toSetV Connect x y = Set.union (toSetV x) (toSetV y)
+toSetV :: Ord a => Basic a -> Set a
+toSetV Empty = Set.empty
+toSetV (Vertex v) = Set.singleton v
+toSetV (Union x y) = Set.union (toSetV x) (toSetV y)
+toSetV (Connect x y) = Set.union (toSetV x) (toSetV y)
 
-toSetE :: Ord a => Basic a -> [(a, a)]
-toSetE Empty = []
-toSetE Vertex v = []
-toSetE Union x y = Set.union (toSetE x) (toSetE y)
-toSetE Connect x y = 
+toSetE :: Ord a => Basic a -> Set (a, a)
+toSetE Empty = Set.empty
+toSetE (Vertex v) = Set.empty
+toSetE (Union x y) = Set.union (toSetE x) (toSetE y)
+toSetE (Connect x y) = 
   Set.union 
-    (Set.union (toAscListE x) (toAscListE y)) 
-    [(p, q) | p <- Set.toList (toSetV x), q <- Set.toList (toSetV y)]
+    (Set.union (toSetE x) (toSetE y)) 
+    (Set.fromList [(p, q) | p <- Set.toList (toSetV x), q <- Set.toList (toSetV y)])
 
 instance Ord a => Eq (Basic a) where
   (==) x y = (toSetV x == toSetV y) && (toSetE x == toSetE y)
@@ -72,8 +78,10 @@ instance Semigroup (Basic a) where
 instance Monoid (Basic a) where
   mempty = Empty
 
--- fromBasic :: Graph g => Basic a -> g a
--- -- todo B
+-- instance Graph Relation where 
+--   fromBasic Empty = empty
+--   fromBasic Vertex v = vertex v
+--   fromBasic Union x y = union 
 
 -- instance (Ord a, Show a) => Show (Basic a) where
 -- -- todo B
