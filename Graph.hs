@@ -84,19 +84,28 @@ instance Semigroup (Basic a) where
 instance Monoid (Basic a) where
   mempty = Empty
 
+basicToPrint :: (Ord a, Show a) => Basic a -> ([(a, a)], [a])
+basicToPrint b = 
+  let eList          = Set.toAscList (toSetE b)
+      eListConnected = [p | (p, _) <- eList] ++ [q | (_, q) <- eList]
+      vList          = Set.toAscList (toSetV b)
+      vListShortened = Data.List.nub vList \\ Data.List.nub eListConnected
+  in (eList, vListShortened)
+
 instance (Ord a, Show a) => Show (Basic a) where
   show b = 
-    let eList          = Set.toAscList (toSetE b)
-        eListConnected = [p | (p, _) <- eList] ++ [q | (_, q) <- eList]
-        vList          = Set.toAscList (toSetV b)
-        vListShortened = Data.List.nub vList \\ Data.List.nub eListConnected
-    in "edges " ++ show eList ++ " + vertices " ++ show vListShortened
+    let (eList, vList) = basicToPrint b
+    in "edges " ++ show eList ++ " + vertices " ++ show vList
 
 example34 :: Basic Int
 example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
 
--- todot :: (Ord a, Show a) => Basic a -> String
--- todot = undefined -- todo C
+todot :: (Ord a, Show a) => Basic a -> String
+todot b = 
+  let (eList, vList) = basicToPrint b
+  in "digraph {\n" ++ 
+    foldl (\x y -> x ++ show (fst y) ++ " -> " ++ show (snd y) ++ ";\n") "" eList ++
+    foldl (\x y -> x ++ show y ++ ";\n") "" vList ++ "}\n"
 
 instance Functor Basic where
   fmap f Empty = empty
@@ -114,7 +123,6 @@ mergeV x y z =
               _  | v == x -> z
                  | v == y -> z
                  | otherwise -> v)
-                         
 
 -- instance Applicative Basic where
 -- -- todo D
