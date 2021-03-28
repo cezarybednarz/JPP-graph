@@ -1,6 +1,9 @@
 module Graph where
 import Set(Set)
 import qualified Set as Set
+import qualified Data.List(nub, sort)
+import Data.List( (\\) ) 
+
 class Graph g where
   empty     :: g a
   vertex    :: a -> g a
@@ -28,14 +31,8 @@ instance Graph Relation where
     }
   fromBasic Empty = empty
   fromBasic (Vertex v) = vertex v
-  fromBasic (Union x y) = 
-    let xRel = fromBasic x
-        yRel = fromBasic y
-    in union xRel yRel
-  fromBasic (Connect x y) = 
-    let xRel = fromBasic x
-        yRel = fromBasic y
-    in connect xRel yRel
+  fromBasic (Union x y) = union (fromBasic x) (fromBasic y)
+  fromBasic (Connect x y) = connect (fromBasic x) (fromBasic y)
                 
 instance (Ord a, Num a) => Num (Relation a) where
   fromInteger = vertex . fromInteger
@@ -84,15 +81,20 @@ instance Semigroup (Basic a) where
 instance Monoid (Basic a) where
   mempty = Empty
 
--- instance (Ord a, Show a) => Show (Basic a) where
--- -- todo B
+instance (Ord a, Show a) => Show (Basic a) where
+  show b = 
+    let eList          = Set.toAscList (toSetE b)
+        eListConnected = [p | (p, _) <- eList] ++ [q | (_, q) <- eList]
+        vList          = Set.toAscList (toSetV b)
+        vListShortened = (Data.List.nub vList) \\ (Data.List.nub eListConnected)
+    in "edges " ++ show eList ++ " + vertices " ++ show vListShortened
 
 -- | Example graph
 -- >>> example34
 -- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
 
--- example34 :: Basic Int
--- example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
+example34 :: Basic Int
+example34 = 1*2 + 2*(3+4) + (3+4)*5 + 17
 
 -- todot :: (Ord a, Show a) => Basic a -> String
 -- todot = undefined -- todo C
