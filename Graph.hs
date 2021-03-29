@@ -131,13 +131,17 @@ instance Applicative Basic where
   (<*>) (Union x y) t = union (x <*> t) (y <*> t)
   (<*>) (Connect x y) t = connect (x <*> t) (y <*> t)
 
--- instance Monad Basic where
-
+instance Monad Basic where
+  (>>=) Empty f = Empty
+  (>>=) (Vertex v) f = f v
+  (>>=) (Union x y) f = union (x >>= f) (y >>= f)
+  (>>=) (Connect x y) f = connect (x >>= f) (y >>= f)
 
 -- -- | Split Vertex
 -- -- >>> splitV 34 3 4 (mergeV 3 4 34 example34)
 -- -- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
 
 splitV :: Eq a => a -> a -> a -> Basic a -> Basic a
-splitV x y z b = union (vertex (\v -> if v == x then y else v)) (vertex (\v -> if v == x then z else v)) <*> b
+splitV x y z b = 
+  union (vertex (\v -> if v == x then y else v)) (vertex (\v -> if v == x then z else v)) <*> b
 
