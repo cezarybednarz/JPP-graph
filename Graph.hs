@@ -9,7 +9,6 @@ class Graph g where
   vertex    :: a -> g a
   union     :: g a -> g a -> g a
   connect   :: g a -> g a -> g a
-  fromBasic :: Basic a -> g a
 
 data Relation a = Relation { domain :: Set a, relation :: Set (a, a) }
     deriving (Eq, Show)
@@ -32,10 +31,6 @@ instance Graph Relation where
           (Set.union fr sr) 
           (Set.fromList ([(x, y) | x <- Set.toList fd, y <- Set.toList sd]))
     }
-  fromBasic Empty = empty
-  fromBasic (Vertex v) = vertex v
-  fromBasic (Union x y) = union (fromBasic x) (fromBasic y)
-  fromBasic (Connect x y) = connect (fromBasic x) (fromBasic y)
                 
 instance (Ord a, Num a) => Num (Relation a) where
   fromInteger = vertex . fromInteger
@@ -50,7 +45,6 @@ instance Graph Basic where
   vertex = Vertex 
   union = Union
   connect = Connect
-  fromBasic b = b
 
 toSetV :: Ord a => Basic a -> Set a
 toSetV Empty = Set.empty
@@ -83,6 +77,12 @@ instance Semigroup (Basic a) where
 
 instance Monoid (Basic a) where
   mempty = Empty
+
+fromBasic :: Graph g => Basic a -> g a
+fromBasic Empty = empty
+fromBasic (Vertex v) = vertex v
+fromBasic (Union x y) = union (fromBasic x) (fromBasic y)
+fromBasic (Connect x y) = connect (fromBasic x) (fromBasic y)
 
 basicToPrint :: (Ord a, Show a) => Basic a -> ([(a, a)], [a])
 basicToPrint b = 
