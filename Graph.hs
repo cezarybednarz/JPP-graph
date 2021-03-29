@@ -19,7 +19,7 @@ data Basic a = Empty
              | Connect (Basic a) (Basic a)
 
 instance Graph Relation where
-  empty = Relation { domain = Set.empty, relation = Set.empty }
+  empty    = Relation { domain = Set.empty, relation = Set.empty }
   vertex v = Relation { domain = Set.singleton v, relation = Set.empty }
   union Relation { domain = fd, relation = fr } Relation { domain = sd, relation = sr} = 
     Relation { domain = Set.union fd sd, relation = Set.union fr sr }
@@ -41,21 +41,21 @@ instance (Ord a, Num a) => Num (Relation a) where
   negate      = id
 
 instance Graph Basic where
-  empty = Empty
-  vertex = Vertex 
-  union = Union
+  empty   = Empty
+  vertex  = Vertex 
+  union   = Union
   connect = Connect
 
 toSetV :: Ord a => Basic a -> Set a
-toSetV Empty = Set.empty
-toSetV (Vertex v) = Set.singleton v
-toSetV (Union x y) = Set.union (toSetV x) (toSetV y)
+toSetV Empty         = Set.empty
+toSetV (Vertex v)    = Set.singleton v
+toSetV (Union x y)   = Set.union (toSetV x) (toSetV y)
 toSetV (Connect x y) = Set.union (toSetV x) (toSetV y)
 
 toSetE :: Ord a => Basic a -> Set (a, a)
-toSetE Empty = Set.empty
-toSetE (Vertex v) = Set.empty
-toSetE (Union x y) = Set.union (toSetE x) (toSetE y)
+toSetE Empty         = Set.empty
+toSetE (Vertex v)    = Set.empty
+toSetE (Union x y)   = Set.union (toSetE x) (toSetE y)
 toSetE (Connect x y) = 
   Set.union 
     (Set.union (toSetE x) (toSetE y)) 
@@ -79,9 +79,9 @@ instance Monoid (Basic a) where
   mempty = Empty
 
 fromBasic :: Graph g => Basic a -> g a
-fromBasic Empty = empty
-fromBasic (Vertex v) = vertex v
-fromBasic (Union x y) = union (fromBasic x) (fromBasic y)
+fromBasic Empty         = empty
+fromBasic (Vertex v)    = vertex v
+fromBasic (Union x y)   = union (fromBasic x) (fromBasic y)
 fromBasic (Connect x y) = connect (fromBasic x) (fromBasic y)
 
 basicToPrint :: (Ord a, Show a) => Basic a -> ([(a, a)], [a])
@@ -108,9 +108,9 @@ todot b =
     foldl (\x y -> x ++ show y ++ ";\n") "" vList ++ "}\n"
 
 instance Functor Basic where
-  fmap f Empty = empty
-  fmap f (Vertex v) = vertex (f v)
-  fmap f (Union x y) = union (fmap f x) (fmap f y)
+  fmap f Empty         = empty
+  fmap f (Vertex v)    = vertex (f v)
+  fmap f (Union x y)   = union (fmap f x) (fmap f y)
   fmap f (Connect x y) = connect (fmap f x) (fmap f y)
 
 -- | Merge vertices
@@ -126,20 +126,20 @@ mergeV x y z =
 
 instance Applicative Basic where
   pure = vertex
-  (<*>) Empty t = empty
-  (<*>) (Vertex v) t = fmap v t
-  (<*>) (Union x y) t = union (x <*> t) (y <*> t)
+  (<*>) Empty t         = empty
+  (<*>) (Vertex v) t    = fmap v t
+  (<*>) (Union x y) t   = union (x <*> t) (y <*> t)
   (<*>) (Connect x y) t = connect (x <*> t) (y <*> t)
 
 instance Monad Basic where
-  (>>=) Empty f = Empty
-  (>>=) (Vertex v) f = f v
-  (>>=) (Union x y) f = union (x >>= f) (y >>= f)
+  (>>=) Empty f         = Empty
+  (>>=) (Vertex v) f    = f v
+  (>>=) (Union x y) f   = union (x >>= f) (y >>= f)
   (>>=) (Connect x y) f = connect (x >>= f) (y >>= f)
 
--- -- | Split Vertex
--- -- >>> splitV 34 3 4 (mergeV 3 4 34 example34)
--- -- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
+-- | Split Vertex
+-- >>> splitV 34 3 4 (mergeV 3 4 34 example34)
+-- edges [(1,2),(2,3),(2,4),(3,5),(4,5)] + vertices [17]
 
 splitV :: Eq a => a -> a -> a -> Basic a -> Basic a
 splitV x y z b = 
